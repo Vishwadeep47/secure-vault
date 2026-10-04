@@ -23,7 +23,10 @@ def create_app(test_config=None):
 
     from app.auth.routes import auth_bp
 
+    from app.vault.notes import notes_bp
+
     app.register_blueprint(auth_bp)
+    app.register_blueprint(notes_bp)
 
     @app.get("/api/health")
     def health():

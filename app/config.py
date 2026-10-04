@@ -20,5 +20,9 @@ class Config:
     MIN_PASSWORD_LEN = 10
     MAX_PASSWORD_LEN = 128
 
+    # Vault notes
+    NOTE_TITLE_MAX = 200
+    NOTE_CONTENT_MAX = 20000
+
     # Upload size cap (used later for the image vault)
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
