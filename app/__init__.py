@@ -23,6 +23,7 @@ def create_app(test_config=None):
 
     from app.auth.routes import auth_bp
 
+    from app.admin.routes import admin_bp
     from app.vault.cards import cards_bp
     from app.vault.images import images_bp
     from app.vault.notes import notes_bp
@@ -31,6 +32,7 @@ def create_app(test_config=None):
     app.register_blueprint(notes_bp)
     app.register_blueprint(images_bp)
     app.register_blueprint(cards_bp)
+    app.register_blueprint(admin_bp)
 
     @app.get("/api/health")
     def health():
