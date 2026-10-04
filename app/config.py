@@ -24,5 +24,7 @@ class Config:
     NOTE_TITLE_MAX = 200
     NOTE_CONTENT_MAX = 20000
 
-    # Upload size cap (used later for the image vault)
-    MAX_CONTENT_LENGTH = 10 * 1024 * 1024
+    # Image vault
+    UPLOAD_DIR = os.environ.get("VAULT_UPLOAD_DIR", os.path.join(BASE_DIR, "uploads"))
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB per request
+    IMAGE_MAX_PIXELS = 25_000_000  # rejects "decompression bomb" images
