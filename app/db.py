@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT NOT NULL DEFAULT 'user',
     mfa_secret TEXT,
     mfa_enabled INTEGER NOT NULL DEFAULT 0,
+    token_version INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
 );
 
@@ -49,6 +50,16 @@ CREATE TABLE IF NOT EXISTS cards (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 CREATE TABLE IF NOT EXISTS audit_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts TEXT NOT NULL,
@@ -73,9 +84,17 @@ def close_db(_exc=None):
         db.close()
 
 
+def _migrate(db):
+    """Add columns that older databases (made by earlier steps) do not have yet."""
+    columns = {row["name"] for row in db.execute("PRAGMA table_info(users)")}
+    if "token_version" not in columns:
+        db.execute("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0")
+
+
 def init_db():
     db = get_db()
     db.executescript(SCHEMA)
+    _migrate(db)
     db.commit()
 
 

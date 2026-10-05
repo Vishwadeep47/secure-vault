@@ -4,11 +4,12 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 
-def create_token(user_id, role, secret, minutes):
+def create_token(user_id, role, secret, minutes, version=0):
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
         "role": role,
+        "ver": version,  # bumped on password change, which ends all older sessions
         "iat": now,
         "exp": now + timedelta(minutes=minutes),
     }

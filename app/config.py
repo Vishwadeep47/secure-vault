@@ -16,6 +16,12 @@ class Config:
     # Sessions
     TOKEN_MINUTES = 15
 
+    # Password reset
+    RESET_TOKEN_MINUTES = 15
+    RESET_REQUESTS_PER_WINDOW = 3     # "forgot" requests per username per window
+    RESET_ATTEMPTS_PER_WINDOW = 10    # reset attempts per IP per window
+    RESET_WINDOW_SECONDS = 900
+
     # Account rules
     MIN_PASSWORD_LEN = 10
     MAX_PASSWORD_LEN = 128
