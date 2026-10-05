@@ -27,6 +27,10 @@ def require_auth(role=None):
             if user is None:
                 return jsonify(error="User not found"), 401
 
+            # A password change/reset bumps token_version, which ends older sessions.
+            if claims.get("ver", 0) != user["token_version"]:
+                return jsonify(error="Session expired, please log in again"), 401
+
             # Role comes from the database, not from the token, so a role change
             # takes effect immediately.
             if role and user["role"] != role:

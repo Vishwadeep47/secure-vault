@@ -21,6 +21,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from app.auth.password_routes import password_bp
     from app.auth.routes import auth_bp
 
     from app.admin.routes import admin_bp
@@ -29,6 +30,7 @@ def create_app(test_config=None):
     from app.vault.notes import notes_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(password_bp)
     app.register_blueprint(notes_bp)
     app.register_blueprint(images_bp)
     app.register_blueprint(cards_bp)

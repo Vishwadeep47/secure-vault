@@ -104,6 +104,7 @@ def login():
         user["role"],
         current_app.config["JWT_SECRET"],
         current_app.config["TOKEN_MINUTES"],
+        user["token_version"],
     )
     return jsonify(token=token, role=user["role"])
 

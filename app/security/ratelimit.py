@@ -32,3 +32,26 @@ def register_failure(username):
 def clear_failures(username):
     with _lock:
         _failures.pop(username, None)
+
+
+_hits = {}  # key -> list of request timestamps
+
+
+def too_many_requests(key, limit, window_seconds):
+    """Count a request for `key`; return True if it exceeds `limit` per window."""
+    now = time.time()
+    with _lock:
+        recent = [t for t in _hits.get(key, []) if now - t < window_seconds]
+        if len(recent) >= limit:
+            _hits[key] = recent
+            return True
+        recent.append(now)
+        _hits[key] = recent
+        return False
+
+
+def clear_all():
+    """Forget everything (used by tests)."""
+    with _lock:
+        _failures.clear()
+        _hits.clear()
