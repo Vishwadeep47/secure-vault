@@ -1,11 +1,25 @@
 """SecureVault application factory."""
-from flask import Flask, jsonify
+import os
 
-from app.config import Config
+from flask import Flask, jsonify, render_template
+
+from app.config import BASE_DIR, Config
+
+# The browser only runs our own scripts and styles. No inline code, no outside sites.
+CONTENT_SECURITY_POLICY = (
+    "default-src 'self'; script-src 'self'; style-src 'self'; "
+    "img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; "
+    "base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+)
 
 
 def create_app(test_config=None):
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        static_folder=os.path.join(BASE_DIR, "static"),
+        static_url_path="/static",
+        template_folder=os.path.join(BASE_DIR, "templates"),
+    )
     app.config.from_object(Config)
     if test_config:
         app.config.update(test_config)
@@ -21,10 +35,9 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from app.admin.routes import admin_bp
     from app.auth.password_routes import password_bp
     from app.auth.routes import auth_bp
-
-    from app.admin.routes import admin_bp
     from app.vault.cards import cards_bp
     from app.vault.images import images_bp
     from app.vault.notes import notes_bp
@@ -36,6 +49,10 @@ def create_app(test_config=None):
     app.register_blueprint(cards_bp)
     app.register_blueprint(admin_bp)
 
+    @app.get("/")
+    def index():
+        return render_template("index.html")
+
     @app.get("/api/health")
     def health():
         return jsonify(status="ok")
@@ -43,5 +60,17 @@ def create_app(test_config=None):
     @app.errorhandler(413)
     def too_large(_error):
         return jsonify(error="File too large"), 413
+
+    @app.after_request
+    def security_headers(response):
+        response.headers["Content-Security-Policy"] = CONTENT_SECURITY_POLICY
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        from flask import request
+
+        if request.path.startswith("/api/"):
+            response.headers.setdefault("Cache-Control", "no-store")  # never cache API data
+        return response
 
     return app

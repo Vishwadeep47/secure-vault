@@ -109,6 +109,20 @@ def login():
     return jsonify(token=token, role=user["role"])
 
 
+@auth_bp.post("/logout")
+@require_auth()
+def logout():
+    """Ends this session AND any other open session of the same account.
+
+    Tokens carry a version number; raising it makes every older token invalid.
+    """
+    db = get_db()
+    db.execute("UPDATE users SET token_version = token_version + 1 WHERE id = ?", (g.user["id"],))
+    db.commit()
+    log_event("logout", g.user["username"])
+    return jsonify(message="Logged out")
+
+
 @auth_bp.get("/me")
 @require_auth()
 def me():
@@ -136,10 +150,8 @@ def mfa_setup():
         ),
     )
     db.commit()
-    return jsonify(
-        otpauth_uri=mfa.provisioning_uri(secret, g.user["username"]),
-        secret=secret,
-    )
+    uri = mfa.provisioning_uri(secret, g.user["username"])
+    return jsonify(otpauth_uri=uri, qr_svg=mfa.qr_svg(uri), secret=secret)
 
 
 @auth_bp.post("/mfa/enable")
